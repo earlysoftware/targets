@@ -15,8 +15,30 @@ function serve() {
             return;
         }
 
-        res.writeHead(200);
-        res.end("hello");
+        let body;
+        req.on("data", function (data) {
+            body += data;
+        });
+        req.on("end", function () {
+            if (body.length == 0) {
+                res.writeHead(400);
+                res.end("empty body");
+                return;
+            }
+
+            // parse body
+            let parsed = {};
+            try {
+                parsed = JSON.parse(body.toString());
+            } catch (error) {
+                res.writeHead(400);
+                res.end("syntax error");
+                return;
+            }
+            console.log(parsed);
+            res.writeHead(200);
+            res.end("hello");
+        });
     });
     server.listen(5935, "localhost", () => console.log("server started"));
 }
