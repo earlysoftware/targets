@@ -4,7 +4,7 @@ import * as http from "http";
 // uses svelte compiler to convert svelte code to javascript
 function transform(source) {
     const { js } = compile(source, {});
-    console.log(js.code);
+    return js.code;
 }
 
 function serve() {
@@ -15,7 +15,7 @@ function serve() {
             return;
         }
 
-        let body;
+        let body = "";
         req.on("data", function (data) {
             body += data;
         });
@@ -35,9 +35,17 @@ function serve() {
                 res.end("syntax error");
                 return;
             }
-            console.log(parsed);
+
+            if (parsed.src == null) {
+                res.writeHead(400);
+                res.end("parsed.src is null");
+                return;
+            }
+
+            // compile
+            const output = transform(parsed.src);
             res.writeHead(200);
-            res.end("hello");
+            res.end(output);
         });
     });
     server.listen(5935, "localhost", () => console.log("server started"));
