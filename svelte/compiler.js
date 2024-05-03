@@ -3,7 +3,10 @@ import * as http from "http";
 
 // uses svelte compiler to convert svelte code to javascript
 function transform(source) {
-    const { js } = compile(source, {});
+    const { js } = compile(source, {
+        filename: "EarlySoftware.svelte",
+        generate: "ssr",
+    });
     return js.code;
 }
 
