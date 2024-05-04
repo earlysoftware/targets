@@ -5,7 +5,7 @@ import * as http from "http";
 function transform(source) {
     const { js } = compile(source, {
         filename: "EarlySoftware.svelte",
-        generate: "ssr",
+        generate: "dom",
     });
     return js.code;
 }
