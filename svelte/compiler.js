@@ -51,7 +51,7 @@ function serve() {
             res.end(output);
 
             // exit if requierd
-            if (parsed.kill == true) {
+            if (parsed.exit == true) {
                 process.exit(0);
             }
         });
