@@ -49,6 +49,11 @@ function serve() {
             const output = transform(parsed.src);
             res.writeHead(200);
             res.end(output);
+
+            // exit if requierd
+            if (parsed.kill == true) {
+                process.exit(0);
+            }
         });
     });
     server.listen(5935, "localhost", () => console.log("server started"));
