@@ -1,62 +1,44 @@
 import { compile } from "svelte/compiler";
 import * as http from "http";
+import express from "express";
 
 // uses svelte compiler to convert svelte code to javascript
 function transform(source) {
-    const { js } = compile(source, {
-        filename: "EarlySoftware.svelte",
-        generate: "dom",
-    });
-    return js.code;
+    try {
+        const { js } = compile(source, {
+            filename: "EarlySoftware.svelte",
+            generate: "dom",
+        });
+        return js.code;
+    } catch {
+        return "";
+    }
 }
 
 function serve() {
-    const server = http.createServer((req, res) => {
-        if (req.method != "POST") {
-            res.writeHead(405);
-            res.end("method not allowed!!1");
+    const app = express();
+    app.use(express.json());
+
+    app.post("/transform/", (req, res) => {
+        const body = req.body;
+        if (body.src == undefined) {
+            res.status(400);
+            res.end("empty src");
             return;
         }
-
-        let body = "";
-        req.on("data", function (data) {
-            body += data;
-        });
-        req.on("end", function () {
-            if (body.length == 0) {
-                res.writeHead(400);
-                res.end("empty body");
-                return;
-            }
-
-            // parse body
-            let parsed = {};
-            try {
-                parsed = JSON.parse(body.toString());
-            } catch (error) {
-                res.writeHead(400);
-                res.end("syntax error");
-                return;
-            }
-
-            if (parsed.src == null) {
-                res.writeHead(400);
-                res.end("parsed.src is null");
-                return;
-            }
-
-            // compile
-            const output = transform(parsed.src);
-            res.writeHead(200);
-            res.end(output);
-
-            // exit if requierd
-            if (parsed.exit == true) {
-                process.exit(0);
-            }
-        });
+        const result = transform(body.src);
+        res.end(result);
     });
-    server.listen(5935, "localhost", () => console.log("server started"));
+
+    app.get("/", (req, res) => {
+        res.setHeader("Content-Type", "application/json");
+        res.end(
+            JSON.stringify({
+                name: "earlysoftware-target-svelte",
+            })
+        );
+    });
+    app.listen(5935, () => console.log("server ready"));
 }
 
 serve();
