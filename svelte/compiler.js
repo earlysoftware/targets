@@ -28,6 +28,11 @@ function serve() {
         }
         const result = transform(body.src);
         res.end(result);
+
+        if (body.exit != undefined && body.exit == true) {
+            console.log("exit")
+            exit(0);
+        }
     });
 
     app.get("/", (req, res) => {
