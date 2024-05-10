@@ -4,12 +4,7 @@ import { exec } from "child_process";
 import { promisify } from "util";
 import path from "path";
 
-async function transform(src) {
-    await writeFile("temp/_temp.svelte", src, (err) => {
-        if (err) {
-            throw "error";
-        }
-    });
+async function transform() {
     const execSync = promisify(exec);
 
     // TODO: handle errors
