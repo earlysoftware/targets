@@ -4,10 +4,6 @@ import { exec } from "child_process";
 import { promisify } from "util";
 
 async function transform(src) {
-    await mkdir("temp").catch((e) => {
-        throw e;
-    });
-
     await writeFile("temp/_temp.svelte", src, (err) => {
         if (err) {
             throw "error";
@@ -25,10 +21,14 @@ async function transform(src) {
     });
 
     // cleanup
+    cleanup();
+    return output;
+}
+
+async function cleanup() {
     await rm("temp", { recursive: true, force: true }).catch((e) => {
         throw e;
     });
-    return output;
 }
 
 function serve() {
@@ -37,20 +37,45 @@ function serve() {
 
     app.post("/transform/", async (req, res) => {
         const body = req.body;
-        if (body.src == undefined) {
+        if (body.files == undefined) {
             res.status(400);
             res.end("empty src");
             return;
         }
 
+        // cleanup only if required, so error handling is useless here
+        cleanup();
+
         try {
-            const result = await transform(body.src);
-            res.status(200);
-            res.end(result);
+            await mkdir("temp").catch((e) => {
+                throw e;
+            });
+
+            // write files
+            for (const file of body.files) {
+                const name = file.name == "_" ? "_temp.svelte" : file.name;
+                console.log(file.src);
+                await writeFile(`temp/${name}`, file.src, {
+                    encoding: "utf8",
+                }).catch((e) => {
+                    throw e;
+                });
+            }
         } catch (e) {
+            console.log(e);
             res.status(500);
             res.end(e.toString());
+            return;
         }
+
+        // try {
+        //     const result = await transform(body.src);
+        //     res.status(200);
+        //     res.end(result);
+        // } catch (e) {
+        //     res.status(500);
+        //     res.end(e.toString());
+        // }
 
         if (body.exit != undefined && body.exit == true) {
             console.log("exit");

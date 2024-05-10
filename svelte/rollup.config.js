@@ -11,7 +11,9 @@ export default {
         file: "temp/_output.js",
     },
     plugins: [
-        svelte({}),
+        svelte({
+            emitCss: false,
+        }),
         resolve({
             browser: true,
             dedupe: ["svelte"],
