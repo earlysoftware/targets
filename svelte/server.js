@@ -2,6 +2,7 @@ import express from "express";
 import { writeFile, readFile, mkdir, rm } from "fs/promises";
 import { exec } from "child_process";
 import { promisify } from "util";
+import path from "path";
 
 async function transform(src) {
     await writeFile("temp/_temp.svelte", src, (err) => {
@@ -31,6 +32,19 @@ async function cleanup() {
     });
 }
 
+// recursively create directories and files
+async function createFiles(p, content) {
+    await mkdir(path.dirname(p), { recursive: true })
+        .catch((e) => {
+            throw e;
+        })
+        .then(async () => {
+            await writeFile(p, content, { encoding: "utf-8" }).catch((e) => {
+                throw e;
+            });
+        });
+}
+
 function serve() {
     const app = express();
     app.use(express.json());
@@ -44,7 +58,7 @@ function serve() {
         }
 
         // cleanup only if required, so error handling is useless here
-        cleanup();
+        await cleanup();
 
         try {
             await mkdir("temp").catch((e) => {
@@ -54,11 +68,11 @@ function serve() {
             // write files
             for (const file of body.files) {
                 const name = file.name == "_" ? "_temp.svelte" : file.name;
-                console.log(file.src);
-                await writeFile(`temp/${name}`, file.src, {
-                    encoding: "utf8",
-                }).catch((e) => {
-                    throw e;
+                console.log(name);
+
+                createFiles(`temp/${name}`, file.src).catch((e) => {
+                    // TODO: should this error be handled better
+                    console.log(e);
                 });
             }
         } catch (e) {
@@ -68,14 +82,14 @@ function serve() {
             return;
         }
 
-        // try {
-        //     const result = await transform(body.src);
-        //     res.status(200);
-        //     res.end(result);
-        // } catch (e) {
-        //     res.status(500);
-        //     res.end(e.toString());
-        // }
+        try {
+            const result = await transform(body.src);
+            res.status(200);
+            res.end(result);
+        } catch (e) {
+            res.status(500);
+            res.end(e.toString());
+        }
 
         if (body.exit != undefined && body.exit == true) {
             console.log("exit");
