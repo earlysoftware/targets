@@ -2,42 +2,38 @@ import express from "express";
 import { writeFile, readFile, mkdir, rm } from "fs/promises";
 import { exec } from "child_process";
 import { promisify } from "util";
-import path from "path";
 
-async function transform() {
+async function transform(src, targetPath) {
+    await mkdir(`${targetPath}/temp`).catch(() => {
+        throw e;
+    });
+    await writeFile(`${targetPath}/temp/_temp.svelte`, src, "utf-8").catch(
+        () => {
+            throw e;
+        }
+    );
+
     const execSync = promisify(exec);
 
     // TODO: handle errors
-    await execSync("npm run rollup");
+    await execSync(`npm run rollup --prefix ${targetPath}`);
 
-    const output = await readFile("temp/_output.js", {
+    const output = await readFile(`${targetPath}/temp/_output.js`, {
         encoding: "utf8",
     }).catch((e) => {
         throw e;
     });
 
-    // cleanup
-    cleanup();
+    // cleanup will be handled later
     return output;
 }
 
-async function cleanup() {
-    await rm("temp", { recursive: true, force: true }).catch((e) => {
-        throw e;
-    });
-}
-
-// recursively create directories and files
-async function createFiles(p, content) {
-    await mkdir(path.dirname(p), { recursive: true })
-        .catch((e) => {
+async function cleanup(targetPath) {
+    await rm(`${targetPath}/temp`, { recursive: true, force: true }).catch(
+        (e) => {
             throw e;
-        })
-        .then(async () => {
-            await writeFile(p, content, { encoding: "utf-8" }).catch((e) => {
-                throw e;
-            });
-        });
+        }
+    );
 }
 
 function serve() {
@@ -46,23 +42,27 @@ function serve() {
 
     app.post("/transform/", async (req, res) => {
         const body = req.body;
-        if (body.src == undefined) {
+        if (body.src == undefined || body.targetPath == undefined) {
             res.status(400);
-            res.end("empty src");
+            res.end("empty src or targetPath");
             return;
         }
 
-        // cleanup only if required, so error handling is useless here
-        await cleanup();
-
-        try {
-            const result = await transform(body.src);
-            res.status(200);
-            res.end(result);
-        } catch (e) {
-            res.status(500);
-            res.end(e.toString());
-        }
+        await cleanup(body.targetPath)
+            .catch(() => {
+                res.status(500);
+                res.end("cleanup error");
+            })
+            .then(async () => {
+                try {
+                    const result = await transform(body.src, body.targetPath);
+                    res.status(200);
+                    res.end(result);
+                } catch (e) {
+                    res.status(500);
+                    res.end(e.toString());
+                }
+            });
     });
 
     app.get("/exit", (req, res) => {
