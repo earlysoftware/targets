@@ -5,10 +5,10 @@ import svelte from "rollup-plugin-svelte";
 
 // TODO: dont build only for production
 export default {
-    input: `temp/_temp.svelte`,
+    input: process.env.EARLYSOFTWARE_TARGET_SRC_PATH,
     output: {
         format: "es",
-        file: "temp/_output.js",
+        file: "_output.js",
     },
     plugins: [
         svelte({

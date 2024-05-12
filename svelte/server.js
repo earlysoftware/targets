@@ -3,22 +3,16 @@ import { writeFile, readFile, mkdir, rm } from "fs/promises";
 import { exec } from "child_process";
 import { promisify } from "util";
 
-async function transform(src, targetPath) {
-    await mkdir(`${targetPath}/temp`).catch(() => {
-        throw e;
-    });
-    await writeFile(`${targetPath}/temp/_temp.svelte`, src, "utf-8").catch(
-        (e) => {
-            throw e;
-        }
-    );
+async function transform(srcPath, targetPath) {
+    process.env.EARLYSOFTWARE_TARGET_SRC_PATH = srcPath;
+    console.log(process.env.EARLYSOFTWARE_TARGET_SRC_PATH);
 
     const execSync = promisify(exec);
 
     // TODO: handle errors
     await execSync(`npm run rollup --prefix ${targetPath}`);
 
-    const output = await readFile(`${targetPath}/temp/_output.js`, {
+    const output = await readFile(`${targetPath}/_output.js`, {
         encoding: "utf8",
     }).catch((e) => {
         throw e;
@@ -29,11 +23,11 @@ async function transform(src, targetPath) {
 }
 
 async function cleanup(targetPath) {
-    await rm(`${targetPath}/temp`, { recursive: true, force: true }).catch(
-        (e) => {
-            throw e;
-        }
-    );
+    await rm(`${targetPath}/_output.js`, {
+        force: true,
+    }).catch((e) => {
+        throw e;
+    });
 }
 
 function serve() {
@@ -42,9 +36,9 @@ function serve() {
 
     app.post("/transform/", async (req, res) => {
         const body = req.body;
-        if (body.src == undefined || body.targetPath == undefined) {
+        if (body.srcPath == undefined || body.targetPath == undefined) {
             res.status(400);
-            res.end("empty src or targetPath");
+            res.end("empty srcPath or targetPath");
             return;
         }
 
@@ -55,7 +49,10 @@ function serve() {
             })
             .then(async () => {
                 try {
-                    const result = await transform(body.src, body.targetPath);
+                    const result = await transform(
+                        body.srcPath,
+                        body.targetPath
+                    );
                     res.status(200);
                     res.end(result);
                 } catch (e) {
