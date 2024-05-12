@@ -46,7 +46,7 @@ function serve() {
 
     app.post("/transform/", async (req, res) => {
         const body = req.body;
-        if (body.files == undefined) {
+        if (body.src == undefined) {
             res.status(400);
             res.end("empty src");
             return;
@@ -54,28 +54,6 @@ function serve() {
 
         // cleanup only if required, so error handling is useless here
         await cleanup();
-
-        try {
-            await mkdir("temp").catch((e) => {
-                throw e;
-            });
-
-            // write files
-            for (const file of body.files) {
-                const name = file.name == "_" ? "_temp.svelte" : file.name;
-                console.log(name);
-
-                createFiles(`temp/${name}`, file.src).catch((e) => {
-                    // TODO: should this error be handled better
-                    console.log(e);
-                });
-            }
-        } catch (e) {
-            console.log(e);
-            res.status(500);
-            res.end(e.toString());
-            return;
-        }
 
         try {
             const result = await transform(body.src);
