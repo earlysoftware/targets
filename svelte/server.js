@@ -88,6 +88,8 @@ function serve() {
     });
 
     app.get("/exit", (req, res) => {
+        res.status(204);
+        res.end("");
         process.exit(0);
     });
 
