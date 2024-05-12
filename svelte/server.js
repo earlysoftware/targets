@@ -8,7 +8,7 @@ async function transform(src, targetPath) {
         throw e;
     });
     await writeFile(`${targetPath}/temp/_temp.svelte`, src, "utf-8").catch(
-        () => {
+        (e) => {
             throw e;
         }
     );
