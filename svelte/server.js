@@ -88,7 +88,7 @@ function serve() {
     });
 
     app.get("/exit", (req, res) => {
-        exit(0);
+        process.exit(0);
     });
 
     app.get("/", (req, res) => {
