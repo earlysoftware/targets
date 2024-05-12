@@ -85,11 +85,10 @@ function serve() {
             res.status(500);
             res.end(e.toString());
         }
+    });
 
-        if (body.exit != undefined && body.exit == true) {
-            console.log("exit");
-            exit(0);
-        }
+    app.get("/exit", (req, res) => {
+        exit(0);
     });
 
     app.get("/", (req, res) => {
