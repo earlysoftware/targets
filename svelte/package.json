@@ -1,6 +1,7 @@
 {
   "scripts": {
-    "rollup": "rollup --config rollup.config.js" 
+    "rollup": "rollup --config rollup.config.js",
+    "start": "node server.js"
   },
   "dependencies": {
     "@rollup/plugin-commonjs": "^25.0.7",
