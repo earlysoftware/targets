@@ -3,6 +3,8 @@ import { writeFile, readFile, mkdir, rm } from "fs/promises";
 import { exec } from "child_process";
 import { promisify } from "util";
 
+process.env.EARLYSOFTWARE_FILE_EXTENSION = ".svelte";
+
 async function transform(srcPath, targetPath) {
     process.env.EARLYSOFTWARE_TARGET_SRC_PATH = srcPath;
     console.log(process.env.EARLYSOFTWARE_TARGET_SRC_PATH);
