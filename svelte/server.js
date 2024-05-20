@@ -1,9 +1,7 @@
 import express from "express";
-import { writeFile, readFile, mkdir, rm } from "fs/promises";
+import { readFile, rm } from "fs/promises";
 import { exec } from "child_process";
 import { promisify } from "util";
-
-process.env.EARLYSOFTWARE_FILE_EXTENSION = ".svelte";
 
 async function transform(srcPath, targetPath) {
     process.env.EARLYSOFTWARE_TARGET_SRC_PATH = srcPath;
@@ -75,6 +73,7 @@ function serve() {
         res.end(
             JSON.stringify({
                 name: "earlysoftware-target-svelte",
+                extension: ".svelte",
             })
         );
     });
