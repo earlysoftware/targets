@@ -73,7 +73,7 @@ function serve() {
         res.end(
             JSON.stringify({
                 name: "earlysoftware-target-svelte",
-                extension: ".svelte",
+                extension: [".svelte"],
             })
         );
     });
