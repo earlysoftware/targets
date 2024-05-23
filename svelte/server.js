@@ -41,11 +41,12 @@ function serve() {
 
     app.post("/transform/", async (req, res) => {
         const body = req.body;
-        if (body.srcPath == undefined || body.targetPath == undefined) {
-            res.status(400);
-            res.end("empty srcPath or targetPath");
+        if (!body.srcPath || !body.targetPath || !body.branchUuid) {
+            res.status(400).end("empty srcPath, targetPath, or branchUuid");
             return;
         }
+
+        process.env.EARLYSOFTWARE_BRANCH_UUID = body.branchUuid;
 
         await cleanup(body.targetPath)
             .catch(() => {
@@ -58,18 +59,15 @@ function serve() {
                         body.srcPath,
                         body.targetPath
                     );
-                    res.status(200);
-                    res.end(result);
+                    res.status(200).end(result);
                 } catch (e) {
-                    res.status(500);
-                    res.end(e.toString());
+                    res.status(500).end(e.toString());
                 }
             });
     });
 
     app.get("/exit", (req, res) => {
-        res.status(204);
-        res.end("");
+        res.status(204).end("");
         process.exit(0);
     });
 
