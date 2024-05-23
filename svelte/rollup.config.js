@@ -13,7 +13,7 @@ function transformImages() {
 
             code = code.replace(
                 /(['"])(.*?)\.(png|jpg|jpeg|gif|svg|bmp)\1/g,
-                `"${url}/branches/${branch}/files/$2.$3"`
+                `"http://${url}/branches/${branch}/files/$2.$3"`
             );
             return {
                 code: code,
