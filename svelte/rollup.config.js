@@ -13,10 +13,14 @@ function transformImages() {
 
             code = code.replace(
                 /(['"])(.*?)\.(png|jpg|jpeg|gif|svg|bmp)\1/g,
-                `"http://${url}/branches/${branch}/files/$2.$3"`
+                `_earlysoftware_image("$2.$3")`
             );
             return {
-                code: code,
+                code: `${code}
+                const _earlysoftware_url = "${url}";
+                const _earlysoftware_image = (c) => {
+                    return _earlysoftware_url + "/branches/" + ${branch} + "/files/" + c
+                }`,
                 map: null,
             };
         },
