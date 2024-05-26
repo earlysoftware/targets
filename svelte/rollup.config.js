@@ -17,9 +17,9 @@ function transformImages() {
             );
             return {
                 code: `${code}
-                const _earlysoftware_url = "${url}";
+                const _earlysoftware_url = () => "${url}";
                 const _earlysoftware_image = (c) => {
-                    return _earlysoftware_url + "/branches/" + ${branch} + "/files/" + c
+                    return _earlysoftware_url() + "/branches/" + ${branch} + "/files/" + c
                 }`,
                 map: null,
             };
@@ -43,6 +43,14 @@ export default {
         }),
         transformImages(),
         commonjs(),
-        terser(),
+        terser({
+            keep_fnames: /_earlysoftware_url/i,
+            mangle: {
+                keep_fnames: /_earlysoftware_url/i,
+            },
+            compress: {
+                reduce_vars: false,
+            },
+        }),
     ],
 };
