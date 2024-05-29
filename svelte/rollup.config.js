@@ -19,7 +19,7 @@ function transformImages() {
                 code: `${code}
                 const _earlysoftware_url = () => "${url}";
                 const _earlysoftware_image = (c) => {
-                    return _earlysoftware_url() + "/branches/" + ${branch} + "/files/" + c
+                    return _earlysoftware_url() + "/branches/" + "${branch}" + "/files/" + c
                 }`,
                 map: null,
             };
